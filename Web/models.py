@@ -12,6 +12,5 @@ class User(db.Model, UserMixin):
     
     projectsAuthInfo = db.Column(db.JSON, default='{}')
 
-    ownedToken = db.relationship('Token')
      
     
