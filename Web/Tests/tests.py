@@ -9,17 +9,25 @@ def test_basic_get():
     
 def test_basic_post():
     
-    response = app.test_client().post("/get_token", json={
+    response = app.test_client().post("/create_user", json={
         "email":"user1@mail.ru",
-        "password":"123456",
+        "password1":"1234567",
+        "firstName":"name"
     })
     
+    assert response.status_code == 200  
+      
+    response = app.test_client().post("/get_token", json={
+        "email":"user1@mail.ru",
+        "password":"1234567",
+    })
+    
+    print("Сгенерированный JWT токен: ", response.json["access_token"] )
     assert response.status_code == 200
-    assert response.json["query"] == 2
 
 def test_create_user_post():
     
-    response = app.test_client().post("/create_user", json={
+    response = app.test_client().post("/", json={
         "login":"test_user",
         "password":"test_password",
     })
@@ -28,7 +36,7 @@ def test_create_user_post():
     
 def test_request_token():
     
-    response = app.test_client().post("/create_user", json={
+    response = app.test_client().post("/", json={
         "login":"test_user",
         "password":"test_password",
     })

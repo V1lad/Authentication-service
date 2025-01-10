@@ -10,7 +10,7 @@ class User(db.Model, UserMixin):
     firstName = db.Column(db.String(150), default='')
     password = db.Column(db.String(150))
     
-    projectsAuthInfo = db.Column(db.JSON, default='[]')
+    projectsAuthInfo = db.Column(db.JSON, default='{}')
 
     ownedToken = db.relationship('Token')
      

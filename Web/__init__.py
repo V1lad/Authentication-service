@@ -19,8 +19,9 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     with open("web/keys/jwt_secret_key.txt", "r") as file:
         app.config["JWT_SECRET_KEY"] = file.readline()
+        
     db.init_app(app)
-
+    jwt = JWTManager(app)
     # Подключаем чертежи из других файлов
     # from .views import views
     from .auth import auth

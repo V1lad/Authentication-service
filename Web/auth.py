@@ -56,28 +56,35 @@ def sign_up():
             new_user = User(email=email, firstName=firstName, password=password1)
 
             db.session.add(new_user)
-
+            db.session.commit()
             flash("Аккаунт создан", category="success")
             return redirect(url_for('auth.login'))
         
-    return render_template("sign_up.html", user=new_user)
+    return render_template("sign_up.html")
 
 
 @auth.route('/get_token', methods=['POST'])
 def get_token():
     info = request.json
-    try:
-        user = User.query.filter_by(email=info["email"]).first()
-        if user and bcrypt.check_password_hash(user.password, info["password"]):
-           access_token = create_access_token(identity=user.id)
-           return jsonify({"valid": "true", "access_token": access_token})
-        else:
-           raise Exception 
-    except:
-        return jsonify({"valid":"false"}), 401
-    
+    user = User.query.filter_by(email=info["email"]).first()
+    if user and user.password == info["password"]:
+        access_token = create_access_token(identity=user.id)
+        return jsonify({"valid": "true", "access_token": access_token})
+    else:
+        return jsonify({"valid":"false", "access_token": ""}), 401
+
+        
+
+@auth.route('/create_user', methods=['POST'])   
 def create_user():
-    pass
+    info = request.json
+    user = User.query.filter_by(email=info["email"]).first()
+    if not user:
+        new_user = User(email=info["email"], firstName=info["firstName"], password=info["password1"])
+        db.session.add(new_user)
+        db.session.commit()
+        
+    return jsonify({"status":"sucessful"}), 200
 
 def confirm_token():
     pass
