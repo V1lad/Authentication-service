@@ -14,18 +14,4 @@ class User(db.Model, UserMixin):
 
     ownedToken = db.relationship('Token')
      
-# Описывает сущность запись
-class Token(db.Model):
-    __tablename__ = 'tokens'
-
-    id = db.Column(db.Integer, primary_key=True, unique=True)
-    
-    parent_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    
-    content = db.Column(db.String, default='')
-    expiration_time = db.Column(db.Integer, default=0)
-    
-     # Корректно удаляет запись
-    def delete(self, db):
-        db.session.delete(self)
     
