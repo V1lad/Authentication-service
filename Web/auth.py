@@ -38,6 +38,11 @@ def sign_up():
         
     return render_template("sign_up.html")
 
+@auth.route('/', methods=['GET', 'POST'])
+def mainpage():
+    
+    return render_template("login.html")
+    
 @auth.route('/get_token', methods=['POST'])
 def get_token():
     info = request.json
@@ -73,23 +78,25 @@ def confirm_token():
 
     return jsonify({'status': 'Missing token'}), 400
 
+# Обработка выдачи прав пользователя
 @auth.route('/get_rights', methods=['POST']) 
 def get_rights():
     token = request.json["access_token"]
     project_part_id = ["project_part_id"]
     
     try:
-        verify_jwt_in_request()
+        verify_jwt_in_request()  # Проверяем переданный токен
         user_id = get_jwt_identity()
-        user = User.query.filter_by(id=user_id).first()
+        user = User.query.filter_by(id=user_id).first() 
         return jsonify({'permissions': user.projectsAuthInfo}), 200
     
     except Exception as e:
         return jsonify({'status': str(e)}), 401
     
-    
+# Хэшируем пароль    
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+# Проверяем хэшированный пароль
 def check_password(stored_password, provided_password):
     return stored_password == hashlib.sha256(provided_password.encode()).hexdigest()
