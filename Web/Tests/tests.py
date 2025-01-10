@@ -1,0 +1,48 @@
+import pytest
+from Main import app
+
+def test_basic_get():
+    
+    response = app.test_client().get("/")
+    
+    assert response.status_code == 200
+    
+def test_basic_post():
+    
+    response = app.test_client().post("/get_token", json={
+        "email":"user1@mail.ru",
+        "password":"123456",
+    })
+    
+    assert response.status_code == 200
+    assert response.json["query"] == 2
+
+def test_create_user_post():
+    
+    response = app.test_client().post("/create_user", json={
+        "login":"test_user",
+        "password":"test_password",
+    })
+    
+    assert response.status_code == 200
+    
+def test_request_token():
+    
+    response = app.test_client().post("/create_user", json={
+        "login":"test_user",
+        "password":"test_password",
+    })
+    
+    assert response.status_code == 200        
+    
+
+def test_validate_token():
+    
+    pass
+    # assert response.status_code == 200   
+
+def test_scenario():
+    
+    pass
+    
+    #assert response.status_code == 200   
