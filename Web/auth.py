@@ -3,6 +3,7 @@ from .models import User
 from . import db
 import bcrypt
 from flask_jwt_extended import create_access_token, verify_jwt_in_request, get_jwt_identity
+import hashlib
 
 auth = Blueprint('auth', __name__)
 
@@ -28,7 +29,7 @@ def sign_up():
         elif len(password1) < 7:
             flash("Пароль должен быть длиннее 7 символов", category="error")
         else:
-            new_user = User(email=email, firstName=firstName, password=password1)
+            new_user = User(email=email, firstName=firstName, password=hash_password(password1))
 
             db.session.add(new_user)
             db.session.commit()
@@ -41,7 +42,7 @@ def sign_up():
 def get_token():
     info = request.json
     user = User.query.filter_by(email=info["email"]).first()
-    if user and user.password == info["password"]:
+    if user and check_password(user.password, info["password"]):
         access_token = create_access_token(identity=user.id)
         return jsonify({"valid": "true", "access_token": access_token})
     else:
@@ -52,7 +53,7 @@ def create_user():
     info = request.json
     user = User.query.filter_by(email=info["email"]).first()
     if not user:
-        new_user = User(email=info["email"], firstName=info["firstName"], password=info["password1"])
+        new_user = User(email=info["email"], firstName=info["firstName"], password=hash_password(info["password1"]))
         db.session.add(new_user)
         db.session.commit()
         
@@ -76,17 +77,19 @@ def confirm_token():
 def get_rights():
     token = request.json["access_token"]
     project_part_id = ["project_part_id"]
-    #try:
-    verify_jwt_in_request()
-    user_id = get_jwt_identity()
-    user = User.query.filter_by(id=user_id).first()
-    return jsonify({'permissions': user.projectsAuthInfo}), 200
     
-    #except Exception as e:
-    #    return jsonify({'status': str(e)}), 401
+    try:
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
+        user = User.query.filter_by(id=user_id).first()
+        return jsonify({'permissions': user.projectsAuthInfo}), 200
+    
+    except Exception as e:
+        return jsonify({'status': str(e)}), 401
     
     
-@auth.route('/', methods=['GET']) 
-def home_page():
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-    return jsonify({'1': 1}), 200  
+def check_password(stored_password, provided_password):
+    return stored_password == hashlib.sha256(provided_password.encode()).hexdigest()
