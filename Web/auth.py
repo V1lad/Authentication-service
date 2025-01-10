@@ -2,34 +2,9 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from .models import User
 from . import db
 import bcrypt
-from flask_jwt_extended import create_access_token, verify_jwt_in_request
+from flask_jwt_extended import create_access_token, verify_jwt_in_request, get_jwt_identity
 
 auth = Blueprint('auth', __name__)
-
-# Отвечает за вход в аккаунт
-@auth.route('', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        user = User.query.filter_by(email=email).first()
-        print(user)
-        if user:
-            if user.password == password:
-                flash('Вы успешно вошли в аккаунт', category='success')
-                return redirect(url_for('views.home'))
-            else:
-                flash('Неверный пароль', category='error')
-        else:
-            flash('Аккаунта с такой почтой не существует', category='error')
-            
-    return render_template("login.html")
-
-# Отвечает за выход из аккаунта
-@auth.route('/logout')
-def logout():
-    return redirect(url_for('auth.login'))
 
 # Отвечает за регистрацию
 @auth.route('/sign-up', methods=['GET', 'POST'])
@@ -61,7 +36,6 @@ def sign_up():
             return redirect(url_for('auth.login'))
         
     return render_template("sign_up.html")
-
 
 @auth.route('/get_token', methods=['POST'])
 def get_token():
@@ -98,8 +72,21 @@ def confirm_token():
 
     return jsonify({'status': 'Missing token'}), 400
 
-def get_user_rights():
-    pass
+@auth.route('/get_rights', methods=['POST']) 
+def get_rights():
+    token = request.json["access_token"]
+    project_part_id = ["project_part_id"]
+    #try:
+    verify_jwt_in_request()
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    return jsonify({'permissions': user.projectsAuthInfo}), 200
+    
+    #except Exception as e:
+    #    return jsonify({'status': str(e)}), 401
+    
+    
+@auth.route('/', methods=['GET']) 
+def home_page():
 
-def terminate_token():
-    pass
+    return jsonify({'1': 1}), 200  
