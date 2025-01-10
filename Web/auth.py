@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from .models import User
 from . import db
 import bcrypt
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, verify_jwt_in_request
 
 auth = Blueprint('auth', __name__)
 
@@ -73,8 +73,6 @@ def get_token():
     else:
         return jsonify({"valid":"false", "access_token": ""}), 401
 
-        
-
 @auth.route('/create_user', methods=['POST'])   
 def create_user():
     info = request.json
@@ -86,8 +84,19 @@ def create_user():
         
     return jsonify({"status":"sucessful"}), 200
 
+@auth.route('/confirm_token', methods=['POST']) 
 def confirm_token():
-    pass
+    token = request.json["access_token"]
+    if token:
+        try:
+            # Проверяем токен
+            verify_jwt_in_request()
+            return jsonify({'status': 'correct'}), 200
+        
+        except Exception as e:
+            return jsonify({'status': str(e)}), 401
+
+    return jsonify({'status': 'Missing token'}), 400
 
 def get_user_rights():
     pass

@@ -24,7 +24,18 @@ def test_basic_post():
     
     print("Сгенерированный JWT токен: ", response.json["access_token"] )
     assert response.status_code == 200
+    
+    saved_token = response.json["access_token"]
 
+    response = app.test_client().post("/confirm_token", json={
+        "access_token":str(saved_token),
+    })
+    
+    print(response.json)
+    
+    assert response.status_code == 200  
+    assert response.json["status"] == "correct"
+    
 def test_create_user_post():
     
     response = app.test_client().post("/", json={
